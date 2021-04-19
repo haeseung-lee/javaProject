@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    
+    <entry key="selectAllHabit">    	 
+
+         SELECT             
+                habit_id
+              , habit_name
+              , habit_type
+              , habit_days
+              , habit_goal
+           FROM admin.hbt_register
+          WHERE user_id = ?
+            AND EXISTS (SELECT TO_CHAR(SYSDATE, 'DY')
+                          FROM DUAL
+                         WHERE habit_days LIKE '%'|| TO_CHAR(SYSDATE, 'DY')||'%')
+    
+    </entry>
+
+   <entry key="selectHabitInfo">
+        SELECT 
+               user_id
+	         , habit_id
+	         , habit_name
+	         , habit_type
+	         , habit_goal
+	         , habit_days
+	      FROM admin.hbt_register
+	     WHERE habit_id = ?
+   </entry>
+   <entry key="insertCheck">
+        INSERT
+          INTO admin.hbt_check
+        VALUES
+             (
+               ?
+             , ?
+             , ?
+             , ?   
+             )  
+   </entry>
+   <entry key="selectDateInfo">
+        SELECT 
+               habit_id
+             , do_date 
+          FROM admin.hbt_check 
+         WHERE habit_id = ?
+           AND do_date = ?
+   </entry>
+   <entry key="updateCheck">
+        UPDATE
+               admin.hbt_check
+           SET count_check = ?
+         WHERE habit_id = ?
+           AND do_date = ?
+   </entry>
+   <entry key="login">
+       SELECT
+              user_id
+         FROM admin.hbt_user
+        WHERE user_name = ?
+          AND user_pwd = ?
+   </entry>
+   <entry key="registerUser">
+       INSERT
+         INTO admin.hbt_user
+       VALUES
+       (
+         admin.seq_user_id.nextval
+       , ?
+       , ?
+       , ?
+       , ?
+       , default
+       )
+   </entry>
+   <entry key="checkUsername">
+       SELECT
+              user_name
+         FROM admin.hbt_user
+        WHERE user_name = ?
+   </entry>
+   
+   <entry key="insertTimer">
+        INSERT
+          INTO admin.hbt_timer
+        VALUES
+             (
+               ?
+             , ?
+             , ?
+             , ROUND(?,3)
+             )  
+   </entry>
+   
+   <entry key="myUser">
+       SELECT
+              user_name
+            , user_pwd
+            , user_email
+            , user_pin
+            , level_num
+            , level_image
+         FROM admin.hbt_user
+         JOIN admin.accom_level using(level_num)
+        WHERE user_id = ?
+   </entry>
+   <entry key="updateTimer">
+        UPDATE
+               admin.hbt_timer
+           SET time_record = ROUND(?+0.0005,3)
+         WHERE habit_id = ?
+           AND do_date = ?
+   </entry>
+   <entry key="selectTimerDateInfo">
+        SELECT 
+               habit_id
+             , do_date 
+          FROM admin.hbt_timer
+         WHERE habit_id = ?
+           AND do_date = ?
+   </entry>
+
+   <entry key="deleteUser">
+       DELETE
+         FROM admin.hbt_user
+        WHERE user_id = ?
+   </entry>
+   
+   <entry key="deleteHabit">
+   	   DELETE
+   	     FROM admin.hbt_register
+   	    WHERE habit_id = ? 
+   	
+   </entry>
+   
+   <entry key="updateUser">
+       UPDATE admin.hbt_user 
+          SET 
+              user_name = ?
+            , user_pwd = ?
+            , user_email = ?
+        WHERE user_id = ?
+   
+   </entry>
+   
+   <entry key="insertAllHabbit">
+       INSERT
+
+   		 INTO admin.hbt_register (
+              user_id
+            , habit_id
+            , habit_name
+            , habit_type
+            , habit_days
+            , habit_goal
+            )
+
+       VALUES (
+       		   ?
+             , admin.seq_habit_id.nextval
+             , ?
+             , ?
+             , ?
+             , ?
+		     )
+	</entry>
+   <entry key="selectTotalCheck">
+        SELECT
+               COUNT(*)
+             , SUM(count_check)
+          FROM admin.hbt_check
+         WHERE SUBSTR(do_date,4,2) = ?
+           AND habit_id = ?
+   </entry>
+   <entry key = "selectTotalTimerCheck">
+        SELECT
+               COUNT(*)
+             , SUM(time_record)
+          FROM admin.hbt_timer
+         WHERE SUBSTR(do_date,4,2) = ? 
+           AND habit_id = ?    	
+   </entry>
+   <entry key="selectCheckGoalRecord">
+        SELECT 
+               do_date
+             , count_check
+             , habit_goal
+          FROM admin.hbt_check c
+          JOIN admin.hbt_register r ON (c.habit_id = r.habit_id)
+         WHERE c.habit_id = ?
+         ORDER BY do_date
+   </entry>
+   <entry key="selectTimerGoalRecord">
+        SELECT 
+               do_date
+             , time_record
+             , habit_goal
+          FROM admin.hbt_timer t
+          JOIN admin.hbt_register r ON (t.habit_id = r.habit_id)
+         WHERE t.habit_id = ?
+         ORDER BY do_date
+   </entry>
+   
+   <entry key="userLevel">
+       SELECT
+       	 	  user_id
+      		, level_num
+      		, level_image
+      		, (select count(*)
+           		 from admin.hbt_register
+          		where user_id = ?
+         	   ) as "habits"
+      		, (select count(*)
+           		 from admin.hbt_register a
+           		 join admin.hbt_check using (habit_id)
+          		where count_check = habit_goal
+            	  and a.user_id = ?
+         	   ) as "success_check"
+      		, (select count(*)
+           		 from admin.hbt_register a
+           		 join admin.hbt_timer using (habit_id)
+          		where time_record = habit_goal
+            	  and a.user_id = ?
+         	   ) as "success_timer"
+  		FROM admin.hbt_user 
+  		JOIN admin.accom_level USING(level_num)
+ 	   WHERE user_id = ?
+   </entry>
+   
+   <entry key="userLvlUpdate">
+       UPDATE admin.hbt_user
+          SET level_num = ?
+        WHERE user_id = ?
+   </entry>
+   
+   
+</properties>
